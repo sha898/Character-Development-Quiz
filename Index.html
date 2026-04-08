@@ -1,1 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Diagnostic</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
+        details > summary::-webkit-details-marker { display: none; }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800 font-sans p-4 md:p-8 flex justify-center">
 
+    <div class="max-w-3xl w-full">
+        
+        <!-- INTRO SCREEN -->
+        <div id="intro-screen" class="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center mt-10 animate-fade-in">
+            <div class="flex justify-center mb-6">
+                <i data-lucide="shield" class="w-16 h-16 text-indigo-600"></i>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+                The Character Diagnostic
+            </h1>
+            <p class="text-lg text-slate-600 mb-8 max-w-xl mx-auto leading-relaxed">
+                Character is rarely revealed when life is easy; it’s revealed when things get messy. 
+                This 40-scenario quiz is a stress test. Be completely honest with your answers—there are no wrong answers, 
+                only insights into your blind spots.
+            </p>
+            <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 mb-8 text-sm text-indigo-800 text-left">
+                <ul class="list-disc pl-5 space-y-2">
+                    <li>Choose the response you would <b>actually</b> do, not the one you <i>should</i> do.</li>
+                    <li>At the end, you will receive your Top 3 "Construction Zones" (Character Flaws).</li>
+                    <li>You will be equipped with the full Diagnostic Toolkit tailored to your results.</li>
+                </ul>
+            </div>
+            <button onclick="startQuiz()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 rounded-full text-lg transition-all transform hover:scale-105 flex items-center justify-center mx-auto shadow-lg">
+                Begin Diagnostic <i data-lucide="chevron-right" class="ml-2 w-5 h-5"></i>
+            </button>
+        </div>
+
+        <!-- QUIZ SCREEN -->
+        <div id="quiz-screen" class="hidden mt-4">
+            <!-- Progress Bar -->
+            <div class="mb-8">
+                <div class="flex justify-between text-sm font-medium text-slate-500 mb-2">
+                    <span id="progress-text">Scenario 1 of 40</span>
+                    <span id="progress-percentage">0%</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2.5">
+                    <div id="progress-bar" class="bg-indigo-600 h-2.5 rounded-full transition-all duration-300 ease-out" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 md:p-10 animate-slide-up" id="question-card">
+                <h2 id="scenario-text" class="text-xl md:text-2xl font-medium text-slate-800 mb-8 leading-snug">
+                    <!-- Scenario text injected here -->
+                </h2>
+                <div id="options-container" class="space-y-4">
+                    <!-- Options injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULTS SCREEN -->
+        <div id="results-screen" class="hidden animate-fade-in mt-4">
+            <div class="text-center mb-10">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-indigo-100 text-indigo-600 mb-4">
+                    <i data-lucide="target" class="w-10 h-10"></i>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Diagnostic Complete</h1>
+                <p class="text-lg text-slate-600">
+                    Based on your honest answers, here are your primary "Construction Zones."
+                </p>
+            </div>
+
+            <!-- Top Flaws Highlights -->
+            <div class="space-y-6 mb-12">
+                <h2 class="text-2xl font-bold text-slate-800 border-b pb-2 flex items-center">
+                    <i data-lucide="alert-circle" class="w-6 h-6 mr-2 text-rose-500"></i> Your Primary Focus Areas
+                </h2>
+                <div id="focus-areas-container" class="space-y-6">
+                    <!-- Focus areas injected here -->
+                </div>
+            </div>
+
+            <!-- The Rest of the Toolkit -->
+            <div class="space-y-4 mb-12">
+                <h2 class="text-2xl font-bold text-slate-800 border-b pb-2 flex items-center mt-10">
+                    <i data-lucide="check-circle" class="w-6 h-6 mr-2 text-emerald-500"></i> The Rest of the Toolkit
+                </h2>
+                <p class="text-slate-600 mb-4">
+                    You showed stronger character in these areas, but keep this toolkit handy to maintain them.
+                </p>
+                
+                <div id="other-areas-container" class="grid grid-cols-1 gap-4">
+                    <!-- Other areas injected here -->
+                </div>
+            </div>
+
+            <div class="text-center pb-20">
+                <button onclick="startQuiz()" class="inline-flex items-center text-slate-500 hover:text-indigo-600 font-medium transition-colors">
+                    <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i> Retake Diagnostic
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DATA ---
+        const toolkitData = [
+            { id: "Honest", title: "1. Honest", shortfall: "Selective truth-telling or 'polite' deception.", redFlag: "You find yourself 'massaging' details so you don't look bad or to avoid a difficult conversation.", mirrorQuestion: "Did I leave out any information today specifically so someone would have a better opinion of me than I deserve?" },
+            { id: "Honoring", title: "2. Honoring / Respectful", shortfall: "Conditional respect (only respecting those 'above' you or those you agree with).", redFlag: "You speak dismissively about people when they aren't in the room.", mirrorQuestion: "How do I treat people who can do absolutely nothing for me?" },
+            { id: "Ownership", title: "3. Extreme Ownership", shortfall: "The 'Yes, but...' defense.", redFlag: "When a mistake happens, your first thought is to explain the external factors that caused it.", mirrorQuestion: "In my last mistake, did I lead with an apology, or did I lead with an explanation?" },
+            { id: "Humble", title: "4. Humble", shortfall: "Self-promotion or 'humble-bragging.'", redFlag: "You feel a pang of resentment when someone else is praised for something you also did.", mirrorQuestion: "Can I be genuinely happy for someone else's success without mentioning my own?" },
+            { id: "Empathetic", title: "5. Empathetic / Compassionate", shortfall: "Logic-first responding or emotional detachment.", redFlag: "You find yourself thinking, 'They brought this on themselves,' instead of 'That must be hard.'", mirrorQuestion: "Am I listening to understand how they feel, or am I listening to solve their problem?" },
+            { id: "Consistent", title: "6. Consistent", shortfall: "'Chameleon' syndrome.", redFlag: "Your tone, language, and values shift depending on which social group you are with.", mirrorQuestion: "If all the different groups in my life (family, work, friends) were in one room, would they recognize the same person?" },
+            { id: "Safe", title: "7. Safe", shortfall: "Unpredictability or 'sharp edges.'", redFlag: "People hesitate to give you bad news or 'walk on eggshells' around you.", mirrorQuestion: "Do people feel smaller or larger after they spend time with me?" },
+            { id: "Empowering", title: "8. Empowering", shortfall: "Knowledge hoarding or micromanaging.", redFlag: "You prefer to 'just do it yourself' because it's faster, leaving others stagnant.", mirrorQuestion: "Am I creating followers who depend on me, or leaders who can replace me?" },
+            { id: "Responds", title: "9. Responds, Not Reacts", shortfall: "Thin-skinned or 'hair-trigger' emotions.", redFlag: "You feel an immediate physical 'heat' and the need to snap back when challenged.", mirrorQuestion: "When I feel offended, do I take a breath to choose my words, or do I let my mood choose them for me?" },
+            { id: "Flexible", title: "10. Flexible / Collaborative", shortfall: "'My way or the highway' thinking.", redFlag: "You view a compromise as a 'loss' rather than a win for the team.", mirrorQuestion: "How often do I actually adopt someone else's idea over my own?" },
+            { id: "Loving", title: "11. Loving", shortfall: "Latent bitterness or apathy.", redFlag: "You find yourself categorizing certain people as 'the enemy' or 'worthless.'", mirrorQuestion: "Am I actively seeking the good of others, even those I find difficult to like?" },
+            { id: "LowQuarrels", title: "12. Low on Quarrels", shortfall: "Being 'right' at the expense of being 'related.'", redFlag: "You frequently engage in online or verbal debates about opinions that don't truly matter.", mirrorQuestion: "Is this issue worth the damage it might do to my relationship with this person?" }
+        ];
+
+        const questionsData = [
+            // Trait 1: Honest
+            { trait: "Honest", scenario: "You missed a deadline because you completely forgot about it. Your boss asks for a status update.", options: [{text: "Give a vague update saying it's 'almost done' to buy time.", points: 2}, {text: "Admit you forgot and provide a realistic timeline for completion.", points: 0}, {text: "Say you were waiting on someone else's input to finish.", points: 3}, {text: "Apologize and say you've been overwhelmed with other projects.", points: 1}] },
+            { trait: "Honest", scenario: "You receive slightly too much change back from a cashier at a busy coffee shop.", options: [{text: "Point out the mistake and return the extra money.", points: 0}, {text: "Keep it, figuring a multi-million dollar company won't miss $5.", points: 3}, {text: "Drop the extra change in the tip jar so it goes to the workers.", points: 1}, {text: "Walk away quickly before they notice.", points: 2}] },
+            { trait: "Honest", scenario: "A friend asks if you like their new outfit, which you genuinely think looks terrible.", options: [{text: "Gush about how amazing they look to make them happy.", points: 2}, {text: "Say 'It's very unique!' to avoid a direct lie but hide your opinion.", points: 1}, {text: "Tell them nicely that it's not your favorite on them, but if they love it, that's what matters.", points: 0}, {text: "Change the subject immediately to avoid answering.", points: 3}] },
+            // Trait 2: Honoring
+            { trait: "Honoring", scenario: "You are at a restaurant and the server is clearly overwhelmed, messing up your order twice.", options: [{text: "Leave a bad tip to teach a lesson about service.", points: 3}, {text: "Politely point out the error and assure them there is no rush.", points: 0}, {text: "Complain to your dinner partner loudly enough for the server to hear.", points: 2}, {text: "Eat it anyway but act visibly annoyed the rest of the meal.", points: 1}] },
+            { trait: "Honoring", scenario: "A coworker you don't particularly like is presenting an idea in a meeting.", options: [{text: "Scroll on your phone while they talk.", points: 3}, {text: "Listen actively and look for the merit in their proposal.", points: 0}, {text: "Interrupt to point out a flaw as soon as you see one.", points: 2}, {text: "Zone out but nod occasionally so it looks like you're listening.", points: 1}] },
+            { trait: "Honoring", scenario: "You overhear colleagues gossiping about a mutual friend's recent struggles.", options: [{text: "Add a minor detail you know to the conversation.", points: 2}, {text: "Listen quietly without contributing.", points: 1}, {text: "Walk away or politely excuse yourself from the conversation.", points: 0}, {text: "Eagerly ask for more details.", points: 3}] },
+            // Trait 3: Ownership
+            { trait: "Ownership", scenario: "A group project you led receives negative feedback from a client.", options: [{text: "Take full responsibility for the result and outline how you will fix it.", points: 0}, {text: "Explain to the client how your team members dropped the ball.", points: 3}, {text: "Defend the work and try to convince the client they are wrong.", points: 2}, {text: "Accept the feedback but privately blame the tight deadline.", points: 1}] },
+            { trait: "Ownership", scenario: "You accidentally back into a parked car in a dark, empty parking lot. There's a small dent.", options: [{text: "Look around; if no one saw, drive off.", points: 3}, {text: "Leave a note with your contact and insurance information.", points: 0}, {text: "Convince yourself the dent was probably already there.", points: 2}, {text: "Wait five minutes to see if the owner comes out, then leave if they don't.", points: 1}] },
+            { trait: "Ownership", scenario: "You snap at your spouse/partner after a long day at work.", options: [{text: "Say 'I'm sorry, but you know I've had a stressful day.'", points: 2}, {text: "Apologize for snapping without adding any justifications.", points: 0}, {text: "Act overly nice for the rest of the night hoping they forget it.", points: 1}, {text: "Wait for them to apologize for whatever triggered you to snap.", points: 3}] },
+            // Trait 4: Humble
+            { trait: "Humble", scenario: "You and a colleague collaborated on a successful pitch, but your boss praises only you.", options: [{text: "Accept the praise; you did most of the hard work anyway.", points: 2}, {text: "Immediately correct your boss and highlight your colleague's specific contributions.", points: 0}, {text: "Say 'Thank you, we worked hard on it,' keeping the focus mostly on the result.", points: 1}, {text: "Use the moment to ask for a raise or promotion.", points: 3}] },
+            { trait: "Humble", scenario: "You are the smartest person in a room discussing a topic you are an expert in.", options: [{text: "Let others share their thoughts first, asking guiding questions.", points: 0}, {text: "Quickly take over the conversation so they don't waste time on wrong ideas.", points: 3}, {text: "Correct people every time they make a minor factual error.", points: 2}, {text: "Wait for a pause, then give a long speech showing your expertise.", points: 1}] },
+            { trait: "Humble", scenario: "You meet someone new who asks what you do for a living.", options: [{text: "Briefly explain, then ask them about their interests.", points: 0}, {text: "Give them a detailed rundown of your impressive title and responsibilities.", points: 2}, {text: "Name-drop important people or companies you work with.", points: 3}, {text: "Downplay it slightly, but make sure they know you are successful.", points: 1}] },
+            // Trait 5: Empathetic
+            { trait: "Empathetic", scenario: "A friend calls you crying about a breakup that you saw coming months ago.", options: [{text: "Say 'I told you they weren't right for you.'", points: 3}, {text: "Listen quietly and tell them you are there for them.", points: 0}, {text: "Immediately start giving advice on how to get over it.", points: 2}, {text: "Try to distract them by talking about something funny that happened to you.", points: 1}] },
+            { trait: "Empathetic", scenario: "You see a coworker crying in their cubicle or office.", options: [{text: "Pretend you didn't see to avoid an awkward situation.", points: 2}, {text: "Gently ask if they are okay or if they need anything.", points: 0}, {text: "Tell your manager they are crying so someone else handles it.", points: 1}, {text: "Tell them they need to pull it together because it's a professional environment.", points: 3}] },
+            { trait: "Empathetic", scenario: "Someone cuts you off in traffic aggressively.", options: [{text: "Assume they might be having an emergency and let it go.", points: 0}, {text: "Honk your horn loudly and gesture at them.", points: 3}, {text: "Speed up to ride their bumper to teach them a lesson.", points: 2}, {text: "Mutter insults under your breath for the next five minutes.", points: 1}] },
+            // Trait 6: Consistent
+            { trait: "Consistent", scenario: "You hold strong personal beliefs, but you are at a dinner party where everyone is mocking those exact beliefs.", options: [{text: "Join in the mocking to fit in and avoid awkwardness.", points: 3}, {text: "Stay completely silent and hope no one asks you.", points: 1}, {text: "Politely state that you see it differently, without starting a fight.", points: 0}, {text: "Laugh along nervously but change the subject quickly.", points: 2}] },
+            { trait: "Consistent", scenario: "Your boss asks you to bend a company rule to get a deal done, but it makes you uncomfortable.", options: [{text: "Do it. The boss asked, so it's their responsibility.", points: 2}, {text: "Respectfully express your discomfort and decline to break the rule.", points: 0}, {text: "Complain about it to coworkers, but do it anyway.", points: 1}, {text: "Do it enthusiastically to win favor with the boss.", points: 3}] },
+            { trait: "Consistent", scenario: "You are alone in a hotel room with an expense account that has no strict limits.", options: [{text: "Order an expensive steak and top-shelf drinks; they're paying.", points: 3}, {text: "Order a slightly nicer meal than you'd normally buy yourself.", points: 1}, {text: "Spend what you would reasonably spend on a normal night out.", points: 0}, {text: "Max out the budget buying things for your family to take home.", points: 2}] },
+            // Trait 7: Safe
+            { trait: "Safe", scenario: "A junior team member approaches you to admit they made a massive, costly error.", options: [{text: "Sigh heavily, roll your eyes, and ask how they could be so careless.", points: 2}, {text: "Thank them for bringing it to you, then focus on finding a solution together.", points: 0}, {text: "Blow up at them and threaten their job security.", points: 3}, {text: "Tell them not to worry about it, but take over all their projects so it doesn't happen again.", points: 1}] },
+            { trait: "Safe", scenario: "Your partner wants to discuss a habit of yours that bothers them.", options: [{text: "Immediately bring up a habit of theirs that bothers you.", points: 3}, {text: "Listen without interrupting, even if it stings.", points: 0}, {text: "Get defensive and explain why their perception is wrong.", points: 2}, {text: "Shut down the conversation saying 'I don't want to argue right now.'", points: 1}] },
+            { trait: "Safe", scenario: "You are in a bad mood, and a cheerful friend asks how you're doing.", options: [{text: "Give a sarcastic, biting remark to bring them down to your level.", points: 3}, {text: "Be honest but kind: 'I'm having a rough day, but it's good to see you.'", points: 0}, {text: "Give a short, cold 'Fine' and stare at your phone.", points: 2}, {text: "Fake a huge smile and pretend everything is perfect.", points: 1}] },
+            // Trait 8: Empowering
+            { trait: "Empowering", scenario: "You are assigned to train a new employee who is struggling to learn a task.", options: [{text: "Take the mouse/tools and say 'Just watch me do it.'", points: 3}, {text: "Patiently walk them through it again, asking where they are getting stuck.", points: 0}, {text: "Tell your boss the new person isn't cut out for the job.", points: 2}, {text: "Give them a manual to read and tell them to figure it out.", points: 1}] },
+            { trait: "Empowering", scenario: "Your team has to solve a complex problem.", options: [{text: "Come up with the solution yourself and assign tasks to everyone.", points: 2}, {text: "Ask the team for their ideas and guide them to build a solution together.", points: 0}, {text: "Let them struggle with it completely unaided to 'build character.'", points: 1}, {text: "Tell them what to do, ignoring their suggestions because your way is faster.", points: 3}] },
+            { trait: "Empowering", scenario: "A subordinate comes to you with a question they should know the answer to.", options: [{text: "Sigh and give them the answer so they go away.", points: 2}, {text: "Ask them guiding questions so they arrive at the answer themselves.", points: 0}, {text: "Make them feel stupid for asking.", points: 3}, {text: "Tell them to go Google it.", points: 1}] },
+            // Trait 9: Responds
+            { trait: "Responds", scenario: "You receive an email that is rudely worded and unfairly critical of your work.", options: [{text: "Immediately type out an angry, defensive reply and hit send.", points: 3}, {text: "Step away from the computer, breathe, and draft a calm, factual reply later.", points: 0}, {text: "Forward it to a friend to mock the sender.", points: 1}, {text: "Reply with passive-aggressive, subtly insulting language.", points: 2}] },
+            { trait: "Responds", scenario: "Someone cuts in front of you in a long line.", options: [{text: "Yell at them to get to the back.", points: 3}, {text: "Politely say, 'Excuse me, the line actually ends back there.'", points: 0}, {text: "Sigh loudly and complain to the person next to you.", points: 1}, {text: "Shoulder check them as you move past to reclaim your spot.", points: 2}] },
+            { trait: "Responds", scenario: "A family member makes a snide comment about your lifestyle at dinner.", options: [{text: "Smile, take a breath, and change the subject calmly.", points: 0}, {text: "Throw a personal insult right back at them.", points: 3}, {text: "Get up and leave the table dramatically.", points: 2}, {text: "Give them the silent treatment for the rest of the meal.", points: 1}] },
+            // Trait 10: Flexible
+            { trait: "Flexible", scenario: "You have a detailed plan for the weekend, but your partner/friends want to do something entirely different.", options: [{text: "Refuse to change plans and go do your thing alone.", points: 3}, {text: "Pout and complain, but eventually go along with their idea.", points: 2}, {text: "Agree to their plan if they promise to do your plan next weekend.", points: 1}, {text: "Let go of your plan easily and enjoy the new activity together.", points: 0}] },
+            { trait: "Flexible", scenario: "In a meeting, the team decides to go with a strategy you actively argued against.", options: [{text: "Commit fully to making their strategy work, despite your reservations.", points: 0}, {text: "Say 'I told you so' the moment the strategy hits a snag.", points: 3}, {text: "Do only the bare minimum required to help execute it.", points: 2}, {text: "Constantly bring up your old idea during execution.", points: 1}] },
+            { trait: "Flexible", scenario: "A sudden storm ruins your outdoor event.", options: [{text: "Ruin everyone's mood by complaining about the weather non-stop.", points: 3}, {text: "Quickly laugh it off and find an indoor alternative for everyone.", points: 0}, {text: "Sit quietly, visibly upset and disengaged.", points: 2}, {text: "Blame whoever didn't check the weather forecast.", points: 1}] },
+            // Trait 11: Loving
+            { trait: "Loving", scenario: "You pass a homeless person asking for change on the street.", options: [{text: "Look right through them as if they are invisible.", points: 2}, {text: "Acknowledge them with a nod or smile, even if you don't give money.", points: 0}, {text: "Mutter under your breath about them getting a job.", points: 3}, {text: "Cross the street to avoid walking near them.", points: 1}] },
+            { trait: "Loving", scenario: "A public figure you strongly disagree with politically goes through a personal tragedy.", options: [{text: "Feel a sense of compassion for their suffering as a human being.", points: 0}, {text: "Post on social media that 'karma caught up to them.'", points: 3}, {text: "Feel secretly glad that they are hurting.", points: 2}, {text: "Tell your friends it's hard to feel bad for someone like that.", points: 1}] },
+            { trait: "Loving", scenario: "Your neighbor plays loud music late at night for the third time this week.", options: [{text: "Call the police immediately without talking to them.", points: 2}, {text: "Knock on the door the next day and have a kind, neighborly conversation.", points: 0}, {text: "Leave an aggressive, anonymous note on their door.", points: 3}, {text: "Blast your own music early the next morning for revenge.", points: 1}] },
+            // Trait 12: LowQuarrels
+            { trait: "LowQuarrels", scenario: "You see an incredibly misinformed post from an acquaintance on social media.", options: [{text: "Write a 5-paragraph essay in the comments destroying their logic.", points: 3}, {text: "Scroll past it. It's not worth your peace or the relationship.", points: 0}, {text: "Post a passive-aggressive meme on your own page aimed at them.", points: 2}, {text: "Private message them to 'correct' their thinking.", points: 1}] },
+            { trait: "LowQuarrels", scenario: "A coworker mispronounces a word that doesn't actually affect the meaning of their sentence.", options: [{text: "Interrupt them immediately to correct their pronunciation.", points: 3}, {text: "Let it go. The point of communication is understanding.", points: 0}, {text: "Correct them later in front of others.", points: 2}, {text: "Use the word correctly yourself heavily in your response to subtly correct them.", points: 1}] },
+            { trait: "LowQuarrels", scenario: "You are debating which movie is the best of a certain franchise.", options: [{text: "Share your favorite and enjoy hearing why they like theirs.", points: 0}, {text: "Refuse to let the topic drop until they admit your choice is better.", points: 3}, {text: "Get genuinely angry that they have such terrible taste.", points: 2}, {text: "Tell them they aren't a 'real fan' if they think that.", points: 1}] },
+            
+            // Bonus Questions
+            { trait: "Ownership", scenario: "You are late meeting a friend for dinner.", options: [{text: "Say 'Sorry I'm late, I should have left earlier.'", points: 0}, {text: "Say 'Sorry, traffic was crazy!' (Even though you left 10 mins late).", points: 2}, {text: "Blame your partner/kids for holding you up at the house.", points: 3}, {text: "Walk in and act like you aren't late at all.", points: 1}] },
+            { trait: "Safe", scenario: "Someone gives you well-intentioned constructive criticism.", options: [{text: "Listen carefully, thank them, and process it later.", points: 0}, {text: "Immediately point out something they do poorly in return.", points: 3}, {text: "Cross your arms and give one-word answers until they stop talking.", points: 2}, {text: "Cry or act overly wounded so they feel bad for bringing it up.", points: 1}] },
+            { trait: "Responds", scenario: "Your computer crashes and you lose 30 minutes of unsaved work.", options: [{text: "Throw your mouse or hit the desk.", points: 3}, {text: "Sigh, take a quick walk to reset, and start over.", points: 0}, {text: "Yell at the IT guy or whoever happens to be nearby.", points: 2}, {text: "Complain loudly to everyone in the office for the next hour.", points: 1}] },
+            { trait: "Consistent", scenario: "You are around people who use a lot of profanity, but you normally don't swear.", options: [{text: "Start swearing heavily to blend in with the group.", points: 3}, {text: "Use your normal vocabulary without judging them.", points: 0}, {text: "Act visibly disgusted every time they swear.", points: 2}, {text: "Preach to them about their language.", points: 1}] }
+        ];
+
+        // --- STATE VARIABLES ---
+        let currentQIndex = 0;
+        let scores = {};
+        let activeQuestions = [];
+
+        // --- INIT ---
+        document.addEventListener("DOMContentLoaded", () => {
+            lucide.createIcons();
+        });
+
+        function hideAllScreens() {
+            document.getElementById('intro-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('results-screen').classList.add('hidden');
+        }
+
+        // --- LOGIC ---
+        function startQuiz() {
+            // Shuffle questions and options
+            activeQuestions = [...questionsData].sort(() => Math.random() - 0.5);
+            activeQuestions.forEach(q => {
+                q.options.sort(() => Math.random() - 0.5);
+            });
+
+            currentQIndex = 0;
+            scores = {};
+            
+            hideAllScreens();
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const question = activeQuestions[currentQIndex];
+            
+            // Re-trigger animation
+            const card = document.getElementById('question-card');
+            card.classList.remove('animate-slide-up');
+            void card.offsetWidth; // trigger reflow
+            card.classList.add('animate-slide-up');
+
+            // Update Progress
+            const progressPercent = Math.round(((currentQIndex + 1) / activeQuestions.length) * 100);
+            document.getElementById('progress-text').innerText = `Scenario ${currentQIndex + 1} of ${activeQuestions.length}`;
+            document.getElementById('progress-percentage').innerText = `${progressPercent}%`;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+            // Update Text
+            document.getElementById('scenario-text').innerText = question.scenario;
+
+            // Render Options
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            question.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 md:p-5 border-2 border-slate-100 rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-100 text-slate-700 font-medium";
+                btn.innerText = opt.text;
+                // Add event listener this way to avoid quote escaping issues
+                btn.onclick = () => handleAnswer(question.trait, opt.points);
+                container.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(trait, points) {
+            scores[trait] = (scores[trait] || 0) + points;
+
+            if (currentQIndex < activeQuestions.length - 1) {
+                currentQIndex++;
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            hideAllScreens();
+            document.getElementById('results-screen').classList.remove('hidden');
+
+            // Calculate Results
+            const sortedFlaws = Object.entries(scores)
+                .map(([trait, pts]) => ({ trait, pts }))
+                .sort((a, b) => b.pts - a.pts);
+
+            const topFlaws = sortedFlaws.slice(0, 3).map(f => f.trait);
+            
+            const focusAreas = toolkitData.filter(t => topFlaws.includes(t.id));
+            const otherAreas = toolkitData.filter(t => !topFlaws.includes(t.id));
+
+            // Render Focus Areas
+            const focusContainer = document.getElementById('focus-areas-container');
+            focusContainer.innerHTML = '';
+            focusAreas.forEach(trait => {
+                focusContainer.innerHTML += `
+                    <div class="bg-white border border-rose-200 rounded-2xl shadow-sm p-6 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-1.5 h-full bg-rose-500"></div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2">${trait.title}</h3>
+                        <div class="bg-rose-50 rounded-lg p-4 mb-4">
+                            <p class="text-sm font-bold text-rose-800 uppercase tracking-wide mb-1">The Shortfall (Flaw)</p>
+                            <p class="text-rose-900">${trait.shortfall}</p>
+                        </div>
+                        <p class="text-slate-700 mb-4">
+                            <span class="font-semibold block mb-1">The Red Flag:</span>
+                            ${trait.redFlag}
+                        </p>
+                        <div class="bg-slate-800 rounded-lg p-4 text-white flex items-start">
+                            <i data-lucide="book-open" class="w-5 h-5 mr-3 flex-shrink-0 text-indigo-300 mt-0.5"></i>
+                            <div>
+                                <span class="font-bold block text-indigo-300 mb-1">The Mirror Question</span>
+                                <p class="italic text-slate-200">"${trait.mirrorQuestion}"</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Render Other Areas
+            const otherContainer = document.getElementById('other-areas-container');
+            otherContainer.innerHTML = '';
+            otherAreas.forEach(trait => {
+                otherContainer.innerHTML += `
+                    <details class="bg-white border border-slate-200 rounded-xl shadow-sm group">
+                        <summary class="font-semibold text-lg p-5 cursor-pointer list-none flex justify-between items-center text-slate-800 group-hover:text-indigo-600">
+                            ${trait.title}
+                            <span class="text-slate-400 group-open:rotate-180 transition-transform duration-200">▼</span>
+                        </summary>
+                        <div class="p-5 pt-0 text-slate-700 border-t border-slate-100">
+                            <p class="mb-2"><span class="font-semibold text-slate-900">Shortfall:</span> ${trait.shortfall}</p>
+                            <p class="mb-4"><span class="font-semibold text-slate-900">Red Flag:</span> ${trait.redFlag}</p>
+                            <div class="bg-slate-50 p-3 rounded-lg border-l-4 border-indigo-400">
+                                <span class="font-semibold text-indigo-800 text-sm uppercase tracking-wide">Mirror Question:</span>
+                                <p class="italic text-slate-600 mt-1">"${trait.mirrorQuestion}"</p>
+                            </div>
+                        </div>
+                    </details>
+                `;
+            });
+
+            // Refresh icons since we injected new HTML with data-lucide tags
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
